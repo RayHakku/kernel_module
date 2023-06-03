@@ -1,4 +1,4 @@
-obj-m += proc4.o
+obj-m += procFs.o
 EXTRA_CFLAGS += -DDEBUG
 
 PWD := $(CURDIR)
