@@ -13,6 +13,7 @@
 static void *my_seq_start(struct seq_file *s, loff_t *pos)
 {
     static unsigned long counter = 0;
+
     if (*pos == 0)
     {
         return &counter;
@@ -37,10 +38,10 @@ static void my_seq_stop(struct seq_file *s, void *v)
     // Nothing to do
 }
 
-static int my_seq_show(struct seq_file *s, void *v)
+static int proc_show(struct seq_file *s, void *v)
 {
     loff_t *spos = (loff_t *)v;
-    seq_printf(s, "%Ld\n");
+    seq_printf(s, "%Ld\n", *spos);
     return 0;
 }
 
@@ -48,7 +49,7 @@ static struct seq_operations my_seq_ops = {
     .start = my_seq_start,
     .next = my_seq_next,
     .stop = my_seq_stop,
-    .show = my_seq_show
+    .show = proc_show,
     };
 
 static int my_open(struct inode *inode, struct file *file){
@@ -61,15 +62,14 @@ static const struct proc_ops proc_fops = {
     .proc_open = my_open,
     .proc_read = seq_read,
     .proc_lseek = seq_lseek,
-    .proc_release = seq_release
+    .proc_release = seq_release,
 };
 #else
-static struct file_operations proc_fops = {
-    .owner = THIS_MODULE,
+static const struct file_operations proc_fops = {
     .open = my_open,
     .read = seq_read,
     .llseek = seq_lseek,
-    .release = seq_release
+    .release = seq_release,
 };
 
 #endif
@@ -77,13 +77,14 @@ static struct file_operations proc_fops = {
 static int __init proc_init(void)
 {
     struct proc_dir_entry *entry;
+    entry = proc_create(PROC_NAME, 0, NULL, &proc_fops);
     if(entry == NULL){
         remove_proc_entry(PROC_NAME, NULL);
         pr_debug("Error: Could not initialize /proc/%s\n", PROC_NAME);
         return -ENOMEM;
     }
 
-    pr_debug("/proc/%s created\n", PROC_NAME);
+    pr_debug("Processo %s criado com sucesso!\n", PROC_NAME);
     return 0;
 }
 
